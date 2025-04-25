@@ -1,7 +1,23 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ChatPage extends StatelessWidget {
-  const ChatPage({super.key});
+  final _auth = FirebaseAuth.instance;
+  final _db = FirebaseFirestore.instance;
+
+  final txtMessage = TextEditingController();
+
+  Future<void> sendMessage() async {
+    var data = {
+      'message': txtMessage.text,
+      'user': _auth.currentUser!.displayName,
+      'uid': _auth.currentUser!.uid,
+      'timestamp': FieldValue.serverTimestamp(),
+    };
+
+    await _db.collection('messages').add(data);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +28,7 @@ class ChatPage extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.logout),
             onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
-          )
+          ),
         ],
       ),
       body: Column(
@@ -25,7 +41,7 @@ class ChatPage extends StatelessWidget {
                   title: Text("Fulano"),
                   subtitle: Text("Mensagem..."),
                   trailing: Text("10/4"),
-                )
+                ),
               ],
             ),
           ),
@@ -36,11 +52,11 @@ class ChatPage extends StatelessWidget {
             child: Row(
               spacing: 10,
               children: [
-                Expanded(child: TextField(),),
-                Icon(Icons.send),
+                Expanded(child: TextField(controller: txtMessage)),
+                IconButton(onPressed: sendMessage, icon: Icon(Icons.send)),
               ],
             ),
-          )
+          ),
         ],
       ),
     );

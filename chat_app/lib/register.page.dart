@@ -1,7 +1,30 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class RegisterPage extends StatelessWidget {
-  const RegisterPage({super.key});
+
+  final txtEmail = TextEditingController();
+  final txtPassword = TextEditingController();
+  final txtName = TextEditingController();
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Future<void> _register(BuildContext context) async {
+    try {
+      UserCredential credential = await _auth.createUserWithEmailAndPassword(
+          email: txtEmail.text, 
+          password: txtPassword.text
+        );
+
+      await credential.user!.updateDisplayName(txtName.text);
+
+      Navigator.of(context)..pop()..pushReplacementNamed("/chat");
+    }
+    on FirebaseAuthException catch(ex) {
+      final snackBar = SnackBar(content: Text(ex.message!));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,6 +35,7 @@ class RegisterPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
+              controller: txtName,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.text_fields),
                 border: OutlineInputBorder(),
@@ -19,6 +43,7 @@ class RegisterPage extends StatelessWidget {
               ),
             ),
             TextField(
+              controller: txtEmail,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.email),
                 border: OutlineInputBorder(),
@@ -26,6 +51,7 @@ class RegisterPage extends StatelessWidget {
               ),
             ),
             TextField(
+              controller: txtPassword,
               obscureText: true,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.password),
@@ -35,14 +61,7 @@ class RegisterPage extends StatelessWidget {
             ),
             ElevatedButton(
               child: Text('Registrar'),
-              onPressed:
-                  () =>
-                      Navigator.of(context)
-                        ..pop()
-                        ..pushReplacementNamed(
-                          '/chat',
-                        ), //desta maneira permite chamar o pop e o push na mesma linha (esta tirando a tela da pilha e colocando a proxima)
-              //antes, se fisse o caminho de login --> registro --> chat, mantinha o login na pilha de telas, desta maneira nao mantem mais
+              onPressed: () => _register(context),
             ),
             TextButton(
               child: Text('Fazer login'),
